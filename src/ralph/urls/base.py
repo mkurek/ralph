@@ -1,3 +1,4 @@
+from django.contrib import admin as django_admin
 from django.conf.urls import include, url
 from rest_framework.authtoken import views
 
@@ -21,8 +22,10 @@ api_urls = list(map(lambda u: url(r'^', include(u)), [
 # api views are registered in router)
 api_urls += [url(r'^', include(router.urls))]
 
+
 urlpatterns = [
     url(r'^', include(admin.urls)),
+    url(r'^', include(django_admin.site.urls)),
     url(r'^api/', include(api_urls)),
     url(r'^api-token-auth/', views.obtain_auth_token),
     url(r'^', include('ralph.dc_view.urls.ui')),

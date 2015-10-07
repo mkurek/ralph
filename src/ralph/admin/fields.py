@@ -45,6 +45,9 @@ class MultilineField(forms.CharField):
 
         return items
 
+    def prepare_value(self, value):
+        return '\n'.join(value)
+
 
 class IntegerMultilineField(MultilineField):
 

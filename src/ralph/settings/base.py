@@ -15,6 +15,8 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = (
     'ralph.admin',
+    'constance',
+    'constance.backends.database',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -25,6 +27,8 @@ INSTALLED_APPS = (
     'import_export',
     'reversion',
     'sitetree',
+    'taggit',
+    'taggit_serializer',
     'ralph.accounts',
     'ralph.assets',
     'ralph.attachments',
@@ -40,8 +44,6 @@ INSTALLED_APPS = (
     'ralph.lib.transitions',
     'rest_framework',
     'rest_framework.authtoken',
-    'taggit',
-    'taggit_serializer',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -124,14 +126,13 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
 
-DEFAULT_DEPRECIATION_RATE = 25
-CHECK_IP_HOSTNAME_ON_SAVE = True
+
+
 ASSET_HOSTNAME_TEMPLATE = {
     'prefix': '{{ country_code|upper }}{{ code|upper }}',
     'postfix': '',
     'counter_length': 5,
 }
-DEFAULT_COUNTRY_CODE = 'POL'
 
 
 LDAP_SERVER_OBJECT_USER_CLASS = 'user'  # possible values: user, person
@@ -172,3 +173,12 @@ REST_FRAMEWORK = {
 }
 
 TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags
+
+
+CONSTANCE_CONFIG = {
+    'DEFAULT_COUNTRY_CODE': ('POL', ''),
+    'DEFAULT_DEPRECIATION_RATE':  (25, ''),
+    'CHECK_IP_HOSTNAME_ON_SAVE': (True, ''),
+    'LIST_TEST': ([1, 2], '123'),
+}
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'

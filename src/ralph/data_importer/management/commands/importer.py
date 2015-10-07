@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from import_export import resources
 
+from ralph import config
 from ralph.data_importer import resources as ralph_resources
 from ralph.data_importer.resources import DefaultResource
 
@@ -140,10 +141,14 @@ class Command(BaseCommand):
             logger.info('Done\n')
 
     def handle(self, *args, **options):
-        settings.CHECK_IP_HOSTNAME_ON_SAVE = False
-        if options.get('type') == 'dir':
-            self.from_dir(options)
-        elif options.get('type') == 'zip':
-            self.from_zip(options)
-        else:
-            self.from_file(options)
+        check_ip_default = config.CHECK_IP_HOSTNAME_ON_SAVE
+        try:
+            config.CHECK_IP_HOSTNAME_ON_SAVE = False
+            if options.get('type') == 'dir':
+                self.from_dir(options)
+            elif options.get('type') == 'zip':
+                self.from_zip(options)
+            else:
+                self.from_file(options)
+        finally:
+            config.CHECK_IP_HOSTNAME_ON_SAVE = check_ip_default

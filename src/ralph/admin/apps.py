@@ -11,3 +11,4 @@ class RalphAdminConfig(AppConfig):
 
     def ready(self):
         register_custom_filters()
+        from ralph.admin.settings import admin  # noqa

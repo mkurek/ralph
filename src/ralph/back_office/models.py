@@ -9,6 +9,7 @@ from django.db import models
 from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
+from ralph import config
 from ralph.accounts.models import Regionalizable
 from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models.assets import Asset
@@ -59,7 +60,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         if self.owner:
             iso2 = Country.name_from_id(int(self.owner.country)).upper()
             return iso2_to_iso3(iso2)
-        return settings.DEFAULT_COUNTRY_CODE
+        return config.DEFAULT_COUNTRY_CODE
 
     def __str__(self):
         return '{}'.format(self.hostname)

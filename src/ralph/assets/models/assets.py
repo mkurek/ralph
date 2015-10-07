@@ -9,6 +9,7 @@ from django.template import Context, Template
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
+from ralph import config
 from ralph.accounts.models import Team
 from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models.base import BaseObject
@@ -285,7 +286,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
     depreciation_rate = models.DecimalField(
         blank=True,
         decimal_places=2,
-        default=settings.DEFAULT_DEPRECIATION_RATE,
+        default=lambda: config.DEFAULT_DEPRECIATION_RATE,
         help_text=_(
             'This value is in percentage.'
             ' For example value: "100" means it depreciates during a year.'

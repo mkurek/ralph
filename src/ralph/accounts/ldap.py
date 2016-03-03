@@ -7,6 +7,8 @@ from django.utils.encoding import force_text
 from django_auth_ldap.backend import _LDAPUser, LDAPSettings, populate_user
 from django_auth_ldap.config import ActiveDirectoryGroupType
 
+from ralph.accounts.management.commands.ldap_sync import NestedGroups
+
 # Add default value to LDAPSetting dict. It will be replaced by
 # django_auth_ldap with value in settings.py and visible for each
 # ldap_user.
@@ -34,7 +36,7 @@ def mirror_groups(self):
         LDAP_GROUPS_NAMES = list(
             getattr(settings, 'AUTH_LDAP_GROUP_MAPPING', {}).values()
         ) + list(
-            getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', {}).keys()
+            getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', {}).values()
         )
         # include groups not mapped from LDAP into target groups names
         non_ad_groups = list(
@@ -94,8 +96,28 @@ def manager_country_attribute_populate(
 
 
 class MappedGroupOfNamesType(ActiveDirectoryGroupType):
-
     """Provide group mappings described in project settings."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._ldap_groups = None
+
+    @property
+    def ldap_groups(self):
+        if not self._ldap_groups:
+            self._ldap_flat_groups = getattr(
+                settings, 'AUTH_LDAP_GROUP_MAPPING', {}
+            )
+            self._ldap_nested_groups = getattr(
+                settings, 'AUTH_LDAP_NESTED_GROUPS', {}
+            )
+            self._ldap_groups = self._ldap_flat_groups.copy()
+            self._ldap_groups.update(self._ldap_nested_groups)
+        return self._ldap_groups
+
+    @property
+    def _ldap_groups_set(self):
+        return set(self.ldap_groups.keys())
+
     def _get_group(self, group_dn, ldap_user, group_search):
         base_dn = group_search.base_dn
         group_search.base_dn = force_text(group_dn)
@@ -105,27 +127,27 @@ class MappedGroupOfNamesType(ActiveDirectoryGroupType):
 
     def user_groups(self, ldap_user, group_search):
         """Get groups which user belongs to."""
-        self._ldap_groups = ldap_user.settings.GROUP_MAPPING
         group_map = []
         try:
-            group_dns = ldap_user.attrs['memberOf']
+            group_dns = set(ldap_user.attrs['memberOf'])
         except KeyError:
-            group_dns = []
-        # if mapping defined then filter groups to mapped only
-        if self._ldap_groups:
-            group_dns = filter(
-                lambda x: force_text(x) in self._ldap_groups, group_dns
-            )
-        for group_dn in group_dns:
+            group_dns = set()
+        for group_dn in group_dns & self._ldap_groups_set:
+            group = self._get_group(group_dn, ldap_user, group_search)
+            group_map.append(group)
+        # handle nested groups
+        username = ldap_user.attrs[settings.AUTH_LDAP_USER_USERNAME_ATTR][0]
+        nested_groups = NestedGroups().users_groups.get(username, set())
+        for group_dn in nested_groups & self._ldap_groups_set:
             group = self._get_group(group_dn, ldap_user, group_search)
             group_map.append(group)
         return group_map
 
     def group_name_from_info(self, group_info):
         """Map ldap group names into ralph names if mapping defined."""
-        if self._ldap_groups:
+        if self.ldap_groups:
             for dn in group_info[1]['distinguishedname']:
-                mapped = self._ldap_groups.get(dn)
+                mapped = self.ldap_groups.get(dn)
                 if mapped:
                     return mapped
         # return original name if mapping not defined

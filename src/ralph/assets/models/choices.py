@@ -53,9 +53,10 @@ class ComponentType(Choices):
     memory = _('memory')
     disk = _('disk drive')
     ethernet = _('ethernet card')
-    expansion = _('expansion card')
+    expansion = _('expansion card')  # TODO?
     fibre = _('fibre channel card')
     share = _('disk share')
+    # TODO: not sure if these are necessary:
     unknown = _('unknown')
     management = _('management')
     power = _('power module')

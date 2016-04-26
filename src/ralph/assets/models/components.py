@@ -3,13 +3,13 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.autocomplete import AutocompleteTooltipMixin
-from ralph.assets.models.assets import Asset
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin
 
 
+# TODO: think if component model is necessary (maybe everything should be stored in component?)
 class ComponentModel(AutocompleteTooltipMixin, NamedMixin, models.Model):
     speed = models.PositiveIntegerField(
         verbose_name=_('speed (MHz)'),
@@ -81,9 +81,6 @@ class GenericComponent(Component):
 
 
 class DiskShareComponent(Component):
-    share_id = models.PositiveIntegerField(
-        verbose_name=_('share identifier'), null=True, blank=True,
-    )
     label = models.CharField(
         verbose_name=_('name'), max_length=255, blank=True, null=True,
         default=None,
@@ -91,16 +88,9 @@ class DiskShareComponent(Component):
     size = models.PositiveIntegerField(
         verbose_name=_('size (MiB)'), null=True, blank=True,
     )
-    snapshot_size = models.PositiveIntegerField(
-        verbose_name=_('size for snapshots (MiB)'), null=True, blank=True,
-    )
     wwn = NullableCharField(
         verbose_name=_('Volume serial'), max_length=33, unique=True,
     )
-    full = models.BooleanField(default=True)
-
-    def get_total_size(self):
-        return (self.size or 0) + (self.snapshot_size or 0)
 
     class Meta:
         verbose_name = _('disk share')
@@ -110,14 +100,10 @@ class DiskShareComponent(Component):
         return '%s (%s)' % (self.label, self.wwn)
 
 
-class DiskShareMountComponent(models.Model):
+class DiskShareMountComponent(Component):
     share = models.ForeignKey(DiskShareComponent, verbose_name=_('share'))
-    asset = models.ForeignKey(
-        Asset, verbose_name=_('asset'), null=True, blank=True,
-        default=None, on_delete=models.SET_NULL
-    )
-    volume = models.CharField(
-        verbose_name=_('volume'), max_length=255, blank=True,
+    volume_name = NullableCharField(
+        verbose_name=_('volume name'), max_length=255, blank=True,
         null=True, default=None
     )
     size = models.PositiveIntegerField(
@@ -125,26 +111,27 @@ class DiskShareMountComponent(models.Model):
     )
 
     def get_size(self):
-        return self.size or self.share.get_total_size()
+        return self.size or self.share.size
 
     class Meta:
-        unique_together = ('share', 'asset')
+        unique_together = ('share', 'base_object')
         verbose_name = _('disk share mount')
         verbose_name_plural = _('disk share mounts')
 
     def __str__(self):
-        return '%s@%r' % (self.volume, self.asset)
+        return '%s@%r' % (self.volume, self.base_object)
 
 
 class ProcessorComponent(Component):
-
     label = models.CharField(verbose_name=_('name'), max_length=255)
     speed = models.PositiveIntegerField(
         verbose_name=_('speed (MHz)'), null=True, blank=True,
     )
+    # TODO: unify with model
     cores = models.PositiveIntegerField(
         verbose_name=_('number of cores'), null=True, blank=True,
     )
+    # TODO: rename to slot_no
     index = models.PositiveIntegerField(
         verbose_name=_('slot number'), null=True, blank=True,
     )
@@ -175,6 +162,7 @@ class MemoryComponent(Component):
     speed = models.PositiveIntegerField(
         verbose_name=_("speed (MHz)"), null=True, blank=True,
     )
+    # TODO: rename to slot_no
     index = models.PositiveIntegerField(
         verbose_name=_("slot number"), null=True, blank=True,
     )
@@ -225,6 +213,7 @@ class SoftwareComponent(Component):
 
 class OperatingSystemComponent(Component):
     label = models.CharField(verbose_name=_('name'), max_length=255)
+    # TODO: check ralph2 what's the purpose of this field
     memory = models.PositiveIntegerField(
         verbose_name=_('memory'), help_text=_('in MiB'), null=True, blank=True,
     )

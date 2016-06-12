@@ -5,9 +5,16 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
 from ralph.admin.filters import IPFilter, TagsListFilter
+from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.assets.models.components import GenericComponent as AssetComponent
 from ralph.assets.models.components import Ethernet
 from ralph.data_center.models.virtual import BaseObjectCluster
-from ralph.networks.forms import SimpleNetworkForm
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
+from ralph.lib.transitions.admin import TransitionAdminMixin
+from ralph.licences.models import BaseObjectLicence
+from ralph.networks.forms import NetworkInline, SimpleNetworkForm
+from ralph.operations.views import OperationViewReadOnlyForExisiting
+from ralph.security.views import BaseObjectSecurityInfo
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -19,7 +26,58 @@ from ralph.virtual.models import (
 
 
 @register(VirtualServerType)
-class VirtualServerTypeForm(RalphAdmin):
+class VirtualServerTypeAdmin(RalphAdmin):
+    pass
+
+
+class VirtualServerNetwork(RalphDetailViewAdmin):
+    icon = 'chain'
+    name = 'virtual_server_networks'
+    label = 'Network'
+    url_name = 'virtual_server_networks'
+
+    inlines = [
+        NetworkInline,
+    ]
+
+
+class VirtualServerLicence(RalphDetailViewAdmin):
+    icon = 'key'
+    name = 'virtual_server_licences'
+    label = _('Licences')
+    url_name = 'virtual_server_licences'
+
+    class VirtualServerLicenceInline(RalphTabularInline):
+        model = BaseObjectLicence
+        raw_id_fields = ('licence',)
+        extra = 1
+
+    inlines = [VirtualServerLicenceInline]
+
+
+class VirtualServerComponents(RalphDetailViewAdmin):
+    icon = 'folder'
+    name = 'virtual_server_components'
+    label = _('Components')
+    url_name = 'virtual_server_components'
+
+    class VirtualServerComponentsInline(RalphTabularInline):
+        model = AssetComponent
+        raw_id_fields = ('model',)
+        extra = 1
+
+    inlines = [VirtualServerComponentsInline]
+
+
+class VirtualServerOperation(OperationViewReadOnlyForExisiting):
+    name = 'virtual_server_operations'
+    url_name = 'virtual_server_operations'
+    inlines = OperationViewReadOnlyForExisiting.admin_class.inlines
+
+
+class VirtualServerSecurityInfo(BaseObjectSecurityInfo):
+    # name = 'virtual_server_security_info'
+    # url_name = 'virtual_server_security_info'
     pass
 
 
@@ -31,7 +89,11 @@ class VirtualServerForm(RalphAdminForm):
 
 
 @register(VirtualServer)
-class VirtualServerAdmin(RalphAdmin):
+class VirtualServerAdmin(
+    TransitionAdminMixin,
+    CustomFieldValueAdminMixin,
+    RalphAdmin
+):
     form = VirtualServerForm
     search_fields = ['hostname', 'sn']
     list_filter = [
@@ -50,8 +112,8 @@ class VirtualServerAdmin(RalphAdmin):
         'service_env__service', 'service_env__environment', 'type',
         'configuration_path'
     ]
+    show_transition_history = True
 
-    # TODO: add the same tabs as in DCAsset
     class ClusterBaseObjectInline(RalphTabularInline):
         model = BaseObjectCluster
         fk_name = 'base_object'
@@ -61,6 +123,13 @@ class VirtualServerAdmin(RalphAdmin):
 
     inlines = [ClusterBaseObjectInline]
 
+    change_views = [
+        VirtualServerNetwork,
+        VirtualServerComponents,
+        VirtualServerSecurityInfo,
+        VirtualServerLicence,
+        VirtualServerOperation,
+    ]
 
 class CloudHostTabularInline(RalphTabularInline):
     can_delete = False

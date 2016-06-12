@@ -36,7 +36,6 @@ from ralph.data_center.models.virtual import (
     Database,
     VIP
 )
-from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table import Table
@@ -45,6 +44,7 @@ from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import NetworkInline, SimpleNetworkForm
 from ralph.networks.models.networks import Network
 from ralph.operations.views import OperationViewReadOnlyForExisiting
+from ralph.security.views import BaseObjectSecurityInfo
 from ralph.supports.models import BaseObjectsSupport
 
 if settings.ENABLE_DNSAAS_INTEGRATION:
@@ -210,6 +210,11 @@ class DataCenterAssetOperation(OperationViewReadOnlyForExisiting):
     name = 'dc_asset_operations'
     url_name = 'data_center_asset_operations'
     inlines = OperationViewReadOnlyForExisiting.admin_class.inlines
+
+
+class DataCenterAssetSecurityInfo(BaseObjectSecurityInfo):
+    name = 'dc_asset_security_info'
+    url_name = 'data_center_asset_security_info'
 
 
 @register(DataCenterAsset)

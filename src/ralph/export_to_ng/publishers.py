@@ -1,3 +1,4 @@
+import inspect
 import logging
 from functools import wraps
 
@@ -31,10 +32,7 @@ def ralph3_sync(model):
                 # publish only if sync enabled (globally and for particular
                 # function)
                 settings.RALPH3_HERMES_SYNC_ENABLED and
-                func.__name__ in settings.RALPH3_HERMES_SYNC_FUNCTIONS and
-                # process the signal only if instance has not attribute
-                # `_handle_post_save` set to False
-                getattr(instance, '_handle_post_save', True)
+                func.__name__ in settings.RALPH3_HERMES_SYNC_FUNCTIONS
             ):
                 try:
                     result = func(sender, instance, created, **kwargs)
@@ -44,6 +42,11 @@ def ralph3_sync(model):
                     logger.exception('Error during Ralph2 sync')
                 else:
                     return result
+
+        # store additional info about signal
+        wrapped_func._signal_model = model
+        wrapped_func._signal_dispatch_uid = func.__name__
+        wrapped_func._signal_type = post_save
         return wrapped_func
     return wrap
 

@@ -104,8 +104,11 @@ class DevicePublisherTestCase(TestCase):
     def test_devices_properties(self):
         property_symbol = 'test_symbol'
         property_value = 'test_value'
+        property_symbol2 = 'test_symbol2'
         self.device.venture_role.roleproperty_set.create(symbol=property_symbol)  # noqa
+        self.device.venture_role.roleproperty_set.create(symbol=property_symbol2)  # noqa
         self.device.set_property(property_symbol, property_value, None)
+        self.device.set_property(property_symbol2, None, None)
         result = sync_device_to_ralph3(Device, self.device)
         self.assertEqual(result, {
             'id': self.asset.id,
@@ -116,7 +119,8 @@ class DevicePublisherTestCase(TestCase):
             'management_hostname': 'mgmt-1.mydc.net',
             'venture_role': 11111,
             'custom_fields': {
-                property_symbol: property_value
+                property_symbol: property_value,
+                property_symbol2: '',
             },
         })
 

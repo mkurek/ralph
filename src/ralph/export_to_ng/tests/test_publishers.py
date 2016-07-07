@@ -6,6 +6,7 @@ from ralph.business.models import (
     RoleProperty,
     RolePropertyType,
     RolePropertyTypeValue,
+    RolePropertyValue,
     Venture,
     VentureRole,
 )
@@ -109,6 +110,25 @@ class DevicePublisherTestCase(TestCase):
         self.device.venture_role.roleproperty_set.create(symbol=property_symbol2)  # noqa
         self.device.set_property(property_symbol, property_value, None)
         self.device.set_property(property_symbol2, None, None)
+
+        # this is property unrelated to current venture role of device
+        # it might comes from some previous role of this device, but it's still
+        # attached to this device in DB - but it's NOT visible in GUI or through
+        # puppet-classifier endpoint, so we should not sync it as well
+        venture_role2 = VentureRole.objects.create(
+            name='qwerty', venture=self.venture1
+        )
+        property_for_device_only = venture_role2.roleproperty_set.create(
+            symbol='for_device_only'
+        )
+        RolePropertyValue.objects.create(
+            property=property_for_device_only,
+            value='xxxxx',
+            device=self.device
+        )
+        # it is, unfortunately, accessible through Device's get_property_set -_-
+        self.assertIn('for_device_only', self.device.get_property_set())
+
         result = sync_device_to_ralph3(Device, self.device)
         self.assertEqual(result, {
             'id': self.asset.id,

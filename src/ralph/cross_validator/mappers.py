@@ -163,6 +163,20 @@ def ip_diff(old_path, new_path):
     return diff
 
 
+def ips_diff(old, new):
+    old_ips = sorted(list(old.ipaddress_set.values_list(
+        'address', 'hostname', 'is_management'
+    )))
+    new_ips = sorted(list(new.ipaddresses.values_list(
+        'address', 'hostname', 'is_management'
+    )))
+    if old_ips != new_ips:
+        return {
+            'old': old_ips,
+            'new': new_ips,
+        }
+
+
 mappers = {
     'DataCenterAsset': {
         'ralph2_model': Asset,
@@ -203,6 +217,7 @@ mappers = {
                 'configuration_path'
             ),
             'custom_fields': custom_fields_diff,
+            'ips': ips_diff,
         },
         'blacklist': ['id', 'parent_id'],
         'errors_checkers': [
@@ -236,6 +251,7 @@ mappers = {
             ),
             'venture': foreign_key_diff('venture_role', 'configuration_path'),
             'custom_fields': custom_fields_diff,
+            'ips': ips_diff,
         },
         'blacklist': ['id'],
     },

@@ -58,3 +58,13 @@ class Network(models.Model):
 
     class Meta(generate_meta(app_label='discovery', model_name='network')):
         pass
+
+
+class IPAddress(models.Model):
+    device = models.ForeignKey(Device, null=True)
+    address = models.IPAddressField(unique=True, null=True, default=None)
+    hostname = models.CharField(max_length=255, null=True, default=None)
+    is_management = models.BooleanField(default=False)
+
+    class Meta(generate_meta(app_label='discovery', model_name='ipaddress')):
+        pass

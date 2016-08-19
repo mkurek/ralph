@@ -537,6 +537,24 @@ class DCHostAdmin(RalphAdmin):
         )
 
     def show_location(self, obj):
-        return getattr(obj, 'location', '')
+        if hasattr(obj, 'get_location'):
+            return ' / '.join(obj.get_location())
+        return ''
     show_location.short_description = _('Location')
     show_location.allow_tags = True
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # location
+        qs = qs.polymorphic_select_related(
+            DataCenterAsset=[
+                'rack__server_room__data_center', 'model'
+            ],
+            VirtualServer=[
+                'parent__asset__datacenterasset__rack__server_room__data_center',
+            ],
+            CloudHost=[
+                'hypervisor__rack__server_room__data_center'
+            ]
+        )
+        return qs

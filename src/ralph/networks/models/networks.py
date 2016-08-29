@@ -623,6 +623,10 @@ class IPAddress(
         default=False,
         verbose_name=_('Expose in DHCP'),
     )
+    manage_dns = models.BooleanField(
+        default=True,
+        verbose_name=_('Manage DNS'),
+    )
     objects = IPAddressQuerySet.as_manager()
 
     class Meta:

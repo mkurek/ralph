@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphTabularInline
@@ -7,13 +8,23 @@ from ralph.assets.models.components import Ethernet
 from ralph.lib.table import TableWithUrl
 from ralph.networks.forms import NetworkForm, NetworkInlineFormset
 from ralph.networks.models import Network
+from ralph.data_center.forms import DataCenterAssetForm
 
 
 class NetworkInline(RalphTabularInline):
     form = NetworkForm
     formset = NetworkInlineFormset
     model = Ethernet
-    exclude = ['model']
+    exclude = ['model', 'speed', 'label', 'is_management']
+
+    def get_queryset(self, request):
+        # TODO: move somewhere else
+        messages.warning(
+            request, 'Main hostname ({}) not found in one of attached IPs'.format('s51407.dc5.alledc.net')
+        )
+        return super().get_queryset(request).filter(
+            ipaddress__is_management=False
+        ).order_by('-mac', '-ipaddress__hostname', 'ipaddress__address')
 
 
 class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):
@@ -38,20 +49,23 @@ class NetworkView(RalphDetailViewAdmin):
     label = 'Network'
     url_name = 'network'
     admin_attribute_list_to_copy = [
-        'available_networks', 'available_environments'
+        'available_networks', 'available_environments', 'form'
     ]
     readonly_fields = ('available_networks', 'available_environments')
     inlines = [
         NetworkInline,
     ]
+    form = DataCenterAssetForm  # TODO: fix for vm
     fieldsets = (
         (_(''), {
             'fields': (
-                'available_networks',
+                'hostname', 'management_ip', 'management_hostname',
+                'manage_management_dns'
             )
         }),
         (_(''), {
             'fields': (
+                'available_networks',
                 'available_environments',
             )
         }),

@@ -115,4 +115,12 @@
 
         $(document).foundation();
     })(ralph.jQuery);
+
+    (function($) {
+        $('i.dns-more-toggle').click(function() {
+            var $this = $(this);
+            $this.closest('td').find('div.dns-more').toggle();
+        });
+
+    })(ralph.jQuery);
 </script>

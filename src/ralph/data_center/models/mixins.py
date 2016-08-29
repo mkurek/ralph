@@ -103,3 +103,10 @@ class WithManagementIPMixin(object):
         ip = self._get_or_create_management_ip()
         ip.hostname = value
         ip.save()
+
+    @property
+    def manage_management_dns(self):
+        ip = self._get_management_ip()
+        if ip:
+            return ip.manage_dns
+        return False

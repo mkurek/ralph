@@ -11,8 +11,11 @@ from ralph.networks.models import IPAddress
 class DataCenterAssetForm(RalphAdminForm):
     management_ip = forms.IPAddressField(required=False)
     management_hostname = forms.CharField(required=False)
+    manage_management_dns = forms.BooleanField(
+        initial=True, required=False, label='Manage management DNS',
+    )
 
-    ip_fields = ['management_ip', 'management_hostname']
+    ip_fields = ['management_ip', 'management_hostname', 'manage_management_dns']
 
     class Meta:
         model = DataCenterAsset

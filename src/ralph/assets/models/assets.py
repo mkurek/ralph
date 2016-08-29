@@ -335,6 +335,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         max_length=255,
         null=True,
         verbose_name=_('hostname'),  # TODO: unique
+        help_text='Main hostname (stored in `/etc/hostname` or similar)',
     )
     sn = NullableCharField(
         blank=True,

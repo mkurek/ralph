@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.components import Ethernet
 from ralph.networks.models import IPAddress
+from ralph.networks.widgets import DHCPExposeCheckboxInput, ManageDNSCheckboxInput
 
 DHCP_EXPOSE_LOCKED_FIELDS = ['hostname', 'address', 'mac', 'dhcp_expose']
 
@@ -202,22 +203,53 @@ class SimpleNetworkForm(forms.ModelForm):
 
 
 class SimpleNetworkWithManagementIPForm(SimpleNetworkForm):
-    is_management = forms.BooleanField(label='Is managment', required=False)
+    #is_management = forms.BooleanField(label='Is managment', required=False)
 
     ip_fields = ['hostname', 'address', 'is_management']
 
 
 class NetworkForm(SimpleNetworkWithManagementIPForm):
-    dhcp_expose = forms.BooleanField(label=_('Expose in DHCP'), required=False)
+    dhcp_expose = forms.BooleanField(
+        label=_('Expose in DHCP'), required=False,
+        widget=DHCPExposeCheckboxInput
+    )
+    manage_dns = forms.BooleanField(
+        label=_('Manage DNS'), required=False, initial=True,
+        widget=ManageDNSCheckboxInput
+    )
 
-    ip_fields = ['hostname', 'address', 'is_management', 'dhcp_expose']
+    ip_fields = [
+        'hostname', 'address',
+        #'is_management',
+        'dhcp_expose', 'manage_dns'
+    ]
 
     class Meta:
         model = Ethernet
         fields = [
-            'hostname', 'address', 'mac', 'is_management', 'label', 'speed',
-            'dhcp_expose'
+            'hostname', 'address', 'mac', #'is_management', 'label', 'speed',
+            'dhcp_expose', 'manage_dns'
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['manage_dns'].widget.attrs['extra_info'] = self.get_manage_dns_info()
+        self.fields['manage_dns'].widget.attrs['show_more'] = bool(self.get_manage_dns_info())
+
+    def get_manage_dns_info(self):
+        if self.ip:
+            ip = self.ip.address
+            if ip == '10.32.37.27':
+                return {
+                    'type': 'ok',
+                    'msg': 'All DNS records are fine',
+                }
+            elif ip == '10.32.37.36':
+                return {
+                    'type': 'warning',
+                    'msg': 'There is problem with some DNS records: <br> * missing SERVICE TXT record <br> * duplicated A record for name s1234.mydc.net',
+                }
+        return {}
 
 
 class NetworkInlineFormset(BaseInlineFormSet):

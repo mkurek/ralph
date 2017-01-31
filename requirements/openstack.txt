@@ -13,7 +13,7 @@ msgpack-python==0.4.7
 netifaces==0.10.4
 oslo.config==3.9.0
 oslo.i18n==3.4.0
-oslo.serialization==2.4.0
+oslo.serialization==2.16.0
 oslo.utils==3.7.0
 pbr==1.8.1
 positional==1.0.1

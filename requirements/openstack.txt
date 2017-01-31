@@ -1,6 +1,6 @@
 # base requirements here are python-keystoneclient and python-novaclient, but all dependencies are explicitly listed to avoid problems with openstack dependencies like in Ralph 2.0
 
-python-keystoneclient==2.3.0
+python-keystoneclient==3.10.0
 python-novaclient==3.2.0
 
 Babel==2.2.0

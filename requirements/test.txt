@@ -4,7 +4,7 @@
 coverage
 coveralls
 ddt
-django-plainpasswordhasher
+django-plainpasswordhasher==0.3
 flake8==3.0.4
 sphinx
 flake8-debugger==1.4.0

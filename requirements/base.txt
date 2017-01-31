@@ -4,7 +4,7 @@ Django==1.8.17  # remember to bump django version in travis config too!
 dj.choices==0.11.0
 django-extensions==1.7.5
 django-filter==0.13.0
-django-import-export==0.4.2
+django-import-export==0.5.1
 django-mptt==0.8.7
 django-reversion==1.8.6
 django-rq==0.9.0

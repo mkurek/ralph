@@ -11,7 +11,7 @@ keystoneauth1==2.3.0
 monotonic==0.6
 msgpack-python==0.4.7
 netifaces==0.10.4
-oslo.config==3.9.0
+oslo.config==3.22.0
 oslo.i18n==3.4.0
 oslo.serialization==2.4.0
 oslo.utils==3.7.0

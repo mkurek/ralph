@@ -2,7 +2,7 @@
 -r prod_ldap.txt
 -r docs.txt
 coverage
-coveralls
+coveralls==1.1
 ddt
 django-plainpasswordhasher
 flake8==3.0.4

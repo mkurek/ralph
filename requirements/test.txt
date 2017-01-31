@@ -3,7 +3,7 @@
 -r docs.txt
 coverage
 coveralls
-ddt
+ddt==1.1.1
 django-plainpasswordhasher
 flake8==3.0.4
 sphinx

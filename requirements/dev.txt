@@ -5,4 +5,4 @@ pudb
 ipython
 ipdb
 isort==4.2.5
-django-silk
+django-silk==0.7.2

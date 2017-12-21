@@ -70,6 +70,7 @@ class ParserFiltersTest(SimpleTestCase):
         result = self.parser.filter_and('key', value)
         self.assertEqual(str(result[ARGS][0]), str(expect))
 
+
 @ddt
 class GraphModelTest(SimpleTestCase):
     @unpack
